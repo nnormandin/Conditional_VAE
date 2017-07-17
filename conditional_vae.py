@@ -85,11 +85,19 @@ def vae_loss(y_true, y_pred):
     kl = 0.5 * K.sum(K.exp(log_sigma) + K.square(mu) - 1. - log_sigma, axis=1)
     return recon + kl
 
+def KL_loss(y_true, y_pred):
+	return(0.5 * K.sum(K.exp(log_sigma) + K.square(mu) - 1. - log_sigma, axis=1))
+
+def recon_loss(y_true, y_pred):
+	return(K.sum(K.binary_crossentropy(y_pred, y_true), axis=1))
+
+
 # compile and fit
-cvae.compile(optimizer=optim, loss=vae_loss)
-cvae.fit([X_train, y_train], X_train, batch_size=m, epochs=n_epoch)
+cvae.compile(optimizer=optim, loss=vae_loss, metrics = [KL_loss, recon_loss])
+cvae_hist = cvae.fit([X_train, y_train], X_train, batch_size=m, epochs=n_epoch)
 
 # this loop prints the one-hot decodings
+
 #for i in range(n_z+n_y):
 #	tmp = np.zeros((1,n_z+n_y))
 #	tmp[0,i] = 1
@@ -100,19 +108,20 @@ cvae.fit([X_train, y_train], X_train, batch_size=m, epochs=n_epoch)
 #	sleep(0.5)
 
 # this loop prints a transition through the number line
-pic_num = 0
-variations = 30 # rate of change; higher is slower
-for j in range(n_z, n_z + n_y - 1):
-	for k in range(variations):
-		v = np.zeros((1, n_z+n_y))
-		v[0, j] = 1 - (k/variations)
-		v[0, j+1] = (k/variations)
-		generated = decoder.predict(v)
-		pic_idx = j - n_z + (k/variations)
-		file_name = './transition/img{0:.3f}.jpg'.format(pic_idx)
-		imsave(file_name, generated.reshape((28,28)))
-		sleep(1.5)
-		pic_num += 1
+
+#pic_num = 0
+#variations = 30 # rate of change; higher is slower
+#for j in range(n_z, n_z + n_y - 1):
+#	for k in range(variations):
+#		v = np.zeros((1, n_z+n_y))
+#		v[0, j] = 1 - (k/variations)
+#		v[0, j+1] = (k/variations)
+#		generated = decoder.predict(v)
+#		pic_idx = j - n_z + (k/variations)
+#		file_name = './transition/img{0:.3f}.jpg'.format(pic_idx)
+#		imsave(file_name, generated.reshape((28,28)))
+#		sleep(1.5)
+#		pic_num += 1
 		
 		
 		
