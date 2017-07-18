@@ -1,4 +1,4 @@
 transition*/*
 .spyproject/*
 !transition_2/*
-
+*ipynb*/*
