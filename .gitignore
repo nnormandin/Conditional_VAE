@@ -1,1 +1,4 @@
+transition*/*
 .spyproject/*
+!transition_2/*
+

@@ -5,8 +5,9 @@ from keras.models import Model
 from keras import backend as K
 from keras.datasets import mnist
 from keras.utils import to_categorical
+from keras.callbacks import EarlyStopping
 from scipy.misc import imsave
-from time import sleep
+
 
 # load mnist
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -24,7 +25,7 @@ optim = 'adam'
 
 # dimension of latent space (batch size by latent dim)
 m = 50
-n_z = 5
+n_z = 50
 
 # dimension of input (and label)
 n_x = X_train.shape[1]
@@ -94,7 +95,9 @@ def recon_loss(y_true, y_pred):
 
 # compile and fit
 cvae.compile(optimizer=optim, loss=vae_loss, metrics = [KL_loss, recon_loss])
-cvae_hist = cvae.fit([X_train, y_train], X_train, batch_size=m, epochs=n_epoch)
+cvae_hist = cvae.fit([X_train, y_train], X_train, batch_size=m, epochs=n_epoch,
+							validation_data = ([X_test, y_test], X_test),
+							callbacks = [EarlyStopping(patience = 5)])
 
 # this loop prints the one-hot decodings
 
@@ -109,19 +112,18 @@ cvae_hist = cvae.fit([X_train, y_train], X_train, batch_size=m, epochs=n_epoch)
 
 # this loop prints a transition through the number line
 
-#pic_num = 0
-#variations = 30 # rate of change; higher is slower
-#for j in range(n_z, n_z + n_y - 1):
-#	for k in range(variations):
-#		v = np.zeros((1, n_z+n_y))
-#		v[0, j] = 1 - (k/variations)
-#		v[0, j+1] = (k/variations)
-#		generated = decoder.predict(v)
-#		pic_idx = j - n_z + (k/variations)
-#		file_name = './transition/img{0:.3f}.jpg'.format(pic_idx)
-#		imsave(file_name, generated.reshape((28,28)))
-#		sleep(1.5)
-#		pic_num += 1
+pic_num = 0
+variations = 30 # rate of change; higher is slower
+for j in range(n_z, n_z + n_y - 1):
+	for k in range(variations):
+		v = np.zeros((1, n_z+n_y))
+		v[0, j] = 1 - (k/variations)
+		v[0, j+1] = (k/variations)
+		generated = decoder.predict(v)
+		pic_idx = j - n_z + (k/variations)
+		file_name = './transition_50/img{0:.3f}.jpg'.format(pic_idx)
+		imsave(file_name, generated.reshape((28,28)))
+		pic_num += 1
 		
 		
 		
