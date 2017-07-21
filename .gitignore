@@ -2,3 +2,5 @@ transition*/*
 .spyproject/*
 !transition_2/*
 *ipynb*/*
+*.html
+*files*
